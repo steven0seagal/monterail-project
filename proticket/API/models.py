@@ -6,8 +6,11 @@ from django.db import models
 class Event(models.Model):
 
     id = models.AutoField(primary_key=True, editable=False)
+    name = models.CharField(max_length=128)
     date = models.DateTimeField()
 
+    def __str__(self):
+        return self.name
 
 
 class Ticket(models.Model):
@@ -24,7 +27,7 @@ class Ticket(models.Model):
         ("PAYED", 'payed'),
         ("ERROR", 'error')]
 
-       
+    id = models.AutoField(primary_key=True, editable=False)
     event = models.ForeignKey(Event,  on_delete=models.CASCADE)
     type = models.CharField(max_length=16, choices=TICKET_TYPE_CHOICES)
     price= models.DecimalField(max_digits=10, decimal_places=2)

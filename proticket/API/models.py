@@ -1,12 +1,13 @@
 from django.db import models
-
+from django.utils import timezone
 # Create your models here.
-
+import datetime
+import pytz
 
 class Event(models.Model):
 
-    id = models.AutoField(primary_key=True, editable=False)
-    name = models.CharField(max_length=128)
+   
+    name = models.CharField(max_length=128, unique=True)
     date = models.DateTimeField()
 
     def __str__(self):
@@ -15,23 +16,12 @@ class Event(models.Model):
 
 class Ticket(models.Model):
 
-    TICKET_TYPE_CHOICES = [
-        ("REGULAR", 'regular'),
-        ("BUDGET", 'budget'),
-        ("PREMIUM", 'premium'),
-        ("VIP", 'vip')]
-
-    PAYMENT_STATUS_CHOICES = [
-        ("NONE", 'none'),
-        ("STARTED", 'started'),
-        ("PAYED", 'payed'),
-        ("ERROR", 'error')]
-
-    id = models.AutoField(primary_key=True, editable=False)
+    
     event = models.ForeignKey(Event,  on_delete=models.CASCADE)
-    type = models.CharField(max_length=16, choices=TICKET_TYPE_CHOICES)
+    type = models.CharField(max_length=128)
     price= models.DecimalField(max_digits=10, decimal_places=2)
     sold_status = models.BooleanField(default=False)
     reserved = models.BooleanField(default = False)
-    payment_status = models.CharField(choices =PAYMENT_STATUS_CHOICES, max_length=16, default='none')
-    reserved_until = models.DateTimeField()
+    payment_status = models.CharField(max_length=128, default='none')
+    reserved_until = models.DateTimeField(default=datetime.datetime(2012, 1, 1, 12, 0, 0,tzinfo=pytz.UTC))
+    reservation_number = models.CharField(max_length=28)

@@ -142,33 +142,38 @@ class MakeReservation(APIView):
     Class for making reservation
     """
 
-    def put(self, request, ticket_type, event_id, format=None):
+    def put(self, request, format=None):
         '''Make reservation based on event id and ticket type '''
-        event = get_object_event(event_id)
-        tickets = Ticket.objects.filter(event=event, type=ticket_type)
+        if 'event_id' in request.data and 'ticket_type' in request.data:
 
-        for ticket in tickets:
-            if ticket.reserved_until < timezone.now() \
-                and ticket.sold_status is False:
-                ticket.reserved = True
-                ticket.reserved_until = timezone.now() \
-                    + datetime.timedelta(minutes=15)
-                ticket.save()
+        
+            event = get_object_event(request.data['event_id'])
+            tickets = Ticket.objects.filter(event=event, type=request.data['ticket_type'])
 
-                return_data = {
-                    'ticket_id': ticket.id,
-                    'event': ticket.event.name,
-                    'type': ticket.type,
-                    'price': str(ticket.price) + ' EUR',
-                    'reserved_until': ticket.reserved_until,
-                    }
+            for ticket in tickets:
+                if ticket.reserved_until < timezone.now() \
+                    and ticket.sold_status is False:
+                    ticket.reserved = True
+                    ticket.reserved_until = timezone.now() \
+                        + datetime.timedelta(minutes=15)
+                    ticket.save()
 
-                return Response(return_data,
-                                status=status.HTTP_202_ACCEPTED)
-        message = \
-            {'message': 'There are no more tickets in that category'}
-        return Response(data=message,
-                        status=status.HTTP_417_EXPECTATION_FAILED)
+                    return_data = {
+                        'ticket_id': ticket.id,
+                        'event': ticket.event.name,
+                        'type': ticket.type,
+                        'price': str(ticket.price) + ' EUR',
+                        'reserved_until': ticket.reserved_until,
+                        }
+
+                    return Response(return_data,
+                                    status=status.HTTP_202_ACCEPTED)
+            message = \
+                {'message': 'There are no more tickets in that category'}
+            return Response(data=message,
+                            status=status.HTTP_417_EXPECTATION_FAILED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class Payment(APIView):

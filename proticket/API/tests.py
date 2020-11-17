@@ -8,7 +8,7 @@ import pytz
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from models import Event, Ticket
+from .models import Event, Ticket
 from collections import Counter
 from decimal import Decimal
 
@@ -34,7 +34,7 @@ class GetAllEventsTestCase(APITestCase):
         data = {'name': 'Test event 2'}
 
         response = self.client.generic(method='GET',
-                path='/new_events/2/', data=json.dumps(data),
+                path='/event/2/', data=json.dumps(data),
                 content_type='application/json')
 
         correct_response = {'id': 2, 'name': 'Test event 2',
@@ -47,8 +47,8 @@ class GetAllEventsTestCase(APITestCase):
         '''Get all events'''
 
         data = {}
-        response = self.client.generic(method='GET', path='/new_events/'
-                , data=json.dumps(data), content_type='application/json's
+        response = self.client.generic(method='GET', path='/event/'
+                , data=json.dumps(data), content_type='application/json'
                 )
 
         correct_response = [collections.OrderedDict({'id': 1,
@@ -177,20 +177,23 @@ class MakeReservationTest(APITestCase):
 
     def test_correct_reservation(self):
         '''Reserve ticket '''
-        response = self.client.put(path='/reserve_ticket/1&budget/')
+        data = {"ticket_type":"budget", "event_id":1}
+        response = self.client.put(data=data ,path='/reserve_ticket/')
 
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
 
     def test_no_vip_ticket(self):
         '''Reserve ticket but no ticket'''
-        response = self.client.put(path='/reserve_ticket/1&vip/')
+        data = {"ticket_type":"VIP", "event_id":1}
+        response = self.client.put(data = data,path='/reserve_ticket/')
 
         self.assertEqual(response.status_code,
                          status.HTTP_417_EXPECTATION_FAILED)
 
     def test_no_event(self):
         '''Reserve ticket but no event '''
-        response = self.client.put(path='/reserve_ticket/5&vip/')
+        data = {"ticket_type":"budget", "event_id":7}
+        response = self.client.put(data = data,path='/reserve_ticket/')
 
         self.assertEqual(response.status_code,
                          status.HTTP_404_NOT_FOUND)
@@ -217,7 +220,9 @@ class PaymentTest(APITestCase):
 
     def test_correct_payment(self):
         '''Pay for ticket'''
-        reservation = self.client.put(path='/reserve_ticket/1&budget/')
+        
+        data={"ticket_type":"premium", "event_id":1}
+        reservation = self.client.put(data = data,path='/reserve_ticket/')
         ticket_number = reservation.data['ticket_id']
         data = {'ticket_id': ticket_number}
         response = self.client.put(path='/payment/',
@@ -258,7 +263,9 @@ class GetReservationNumber(APITestCase):
 
     def test_get_reservation_number(self):
         '''Get reervation information '''
-        reservation = self.client.put(path='/reserve_ticket/1&budget/')
+
+        data={"ticket_type":"premium", "event_id":1}
+        reservation = self.client.put(data = data,path='/reserve_ticket/')
         ticket_number = reservation.data['ticket_id']
         pay = self.client.put(path='/payment/',
                               data=json.dumps({'ticket_id': ticket_number}),

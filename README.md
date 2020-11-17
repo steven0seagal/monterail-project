@@ -28,7 +28,7 @@ pip3 install -r requirements.txt
 <p>4. Go to movies folder and migrate data</p>
 
 ```
-cd movies
+cd proticket
 python3 manage.py migrate
 ```
 <p>5. Run server</p>
